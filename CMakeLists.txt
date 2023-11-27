@@ -24,5 +24,5 @@ target_compile_options(ThreadSync PRIVATE ${flags})
 add_executable(PersistentWorkers misc/persistentWorkers.cpp)
 target_compile_options(PersistentWorkers PRIVATE ${flags})
 
-add_executable(LockQueue WorkerPool/Lock.cpp)
-target_compile_options(LockQueue PRIVATE ${flags})
+add_executable(AsyncQueues WorkerPool/AsyncQueues.cpp)
+target_compile_options(AsyncQueues PRIVATE ${flags})
