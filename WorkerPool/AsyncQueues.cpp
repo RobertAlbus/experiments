@@ -3,17 +3,13 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <numeric>
 #include <queue>
 #include <semaphore>
 #include <thread>
 
 template <typename T>
 class ThreadSafeQueue {
-private:
-    std::queue<T> queue;
-    std::mutex push_mutex;
-    std::mutex pop_mutex;
-
 public:
     virtual void push(T&& item) = 0;
     virtual T pop() = 0;
@@ -83,6 +79,7 @@ private:
 };
 
 
+
 int main() {
     using namespace std::chrono_literals;
 
@@ -93,7 +90,8 @@ int main() {
     LockQueue<std::function<void()>> lockQueue;
     AtomicQueue<std::function<void()>> atomicQueue;
 
-    int batchSize = 100;
+    std::vector<int> batchSizes {100, 8, 3, 2, 1};
+    int batchSize = accumulate(batchSizes.begin(),batchSizes.end(),0);
     int batchCount = 100;
     int taskCount = batchSize * batchCount;
 
@@ -144,13 +142,17 @@ int main() {
     for (int batch = 0; batch < batchCount; batch++) {
         // printf("\n\n| batch [lock] %i", batch);
         // printf("\n--------------------------------", batch);
-        for (int i = 0; i < batchSize; ++i) {
-            pendingWorkSemaphore.release();
+        for (auto size : batchSizes) {
+            for (int i = 0; i < size; ++i) {
+                pendingWorkSemaphore.release();
+            }
+        }
+        for (auto size : batchSizes) {
+            for (int i = 0; i < size; ++i) {
+                completedWorkSemaphore.acquire();
+            }
         }
 
-        for (int i = 0; i < batchSize; ++i) {
-            completedWorkSemaphore.acquire();
-        }
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -205,12 +207,15 @@ int main() {
     for (int batch = 0; batch < batchCount; batch++) {
         // printf("\n\n| batch [atomic] %i", batch);
         // printf("\n--------------------------------", batch);
-        for (int i = 0; i < batchSize; ++i) {
-            pendingWorkSemaphore.release();
+        for (auto size : batchSizes) {
+            for (int i = 0; i < size; ++i) {
+                pendingWorkSemaphore.release();
+            }
         }
-
-        for (int i = 0; i < batchSize; ++i) {
-            completedWorkSemaphore.acquire();
+        for (auto size : batchSizes) {
+            for (int i = 0; i < size; ++i) {
+                completedWorkSemaphore.acquire();
+            }
         }
     }
 
