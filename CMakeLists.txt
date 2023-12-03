@@ -31,3 +31,14 @@ target_compile_options(PersistentWorkers PRIVATE ${flags})
 
 add_executable(AsyncQueues WorkerPool/AsyncQueues.cpp)
 target_compile_options(AsyncQueues PRIVATE ${flags})
+
+# ----------------
+# rxcpp
+
+find_package(rxcpp CONFIG REQUIRED)
+
+add_executable(RxCpp rxcpp/main.cpp)
+target_compile_options(RxCpp PRIVATE ${flags} -Wdeprecated-declarations)
+target_include_directories(RxCpp PUBLIC ${PROJECT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
+
+

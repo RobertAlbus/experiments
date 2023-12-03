@@ -13,3 +13,4 @@ if(NOT EXISTS "$ENV{VCPKG_ROOT}")
 endif()
 
 set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+set(VCPKG_INCLUDE_DIR ${PROJECT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
