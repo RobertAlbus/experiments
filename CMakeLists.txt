@@ -37,8 +37,8 @@ target_compile_options(AsyncQueues PRIVATE ${flags})
 
 find_package(rxcpp CONFIG REQUIRED)
 
-add_executable(RxCpp rxcpp/main.cpp)
-target_compile_options(RxCpp PRIVATE ${flags} -Wdeprecated-declarations)
+add_executable(RxCpp rxcpp/OscGen/main.cpp)
+target_compile_options(RxCpp PRIVATE -Wdeprecated-declarations ${flags})
 target_include_directories(RxCpp PUBLIC ${PROJECT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
 
 
