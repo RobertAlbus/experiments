@@ -8,6 +8,31 @@
 #include <semaphore>
 #include <thread>
 
+
+#include <sched.h>
+#include <unistd.h>
+
+void setRealTimePriority() {
+    struct sched_param param;
+    param.sched_priority = sched_get_priority_max(SCHED_FIFO);
+
+    if (sched_setscheduler(0, SCHED_FIFO, &param) == -1) {
+        perror("sched_setscheduler failed");
+        exit(1);
+    }
+}
+
+void setRealTimePriority(std::jthread& th) {
+    int policy = SCHED_FIFO;
+    struct sched_param param;
+    param.sched_priority = sched_get_priority_max(policy);
+
+    if (pthread_setschedparam(th.native_handle(), policy, &param)) {
+        perror("Failed to set thread to real-time priority");
+        exit(1);
+    }
+}
+
 template <typename T>
 struct Bins {
     Bins(int size = 10) {
@@ -100,6 +125,8 @@ private:
 
 
 int main() {
+    setRealTimePriority();
+
     using namespace std::chrono_literals;
 
     bool shouldStop = false;
@@ -140,7 +167,7 @@ int main() {
     printf("\nLOCK QUEUE\n");
 
     for (int i = 0; i < workerCount; ++i) {
-        new std::jthread(
+        auto thread = new std::jthread(
                 [&lockQueue,
                 &shouldStop,
                 &pendingWorkSemaphore,
@@ -158,6 +185,8 @@ int main() {
                 completedWorkSemaphore.release();
             }
         });
+
+        setRealTimePriority(*thread);
     }
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -204,7 +233,7 @@ int main() {
 
 
     for (int i = 0; i < largestBatchSize; ++i) {
-        new std::jthread(
+        auto thread = new std::jthread(
                 [&atomicQueue,
                 &shouldStop,
                 &pendingWorkSemaphore,
@@ -223,6 +252,8 @@ int main() {
                 completedWorkSemaphore.release();
             }
         });
+
+        setRealTimePriority(*thread);
     }
 
     start = std::chrono::high_resolution_clock::now();
@@ -299,6 +330,7 @@ int main() {
                 doneSemaphore.release();
             }
         });
+        setRealTimePriority(binWorkers[i]);
     }
 
 
