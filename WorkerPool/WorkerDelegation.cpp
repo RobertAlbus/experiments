@@ -2,7 +2,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
-#include <mutex>
+#include <atomic>
 #include <numeric>
 #include <queue>
 #include <semaphore>
@@ -14,18 +14,18 @@ struct Bins {
         data.resize(size);
     }
 
-    void set(int bin, T item) {
-        data.at(bin) = item;
-    }
+    // void set(int bin, T item) {
+    //     data.at(bin) = item;
+    //     data.at(0)
+    // }
 
-    T get(int bin) {
+    T& get(int bin) {
         return data.at(bin);
     }
 
 private:
     std::vector<T> data;
 };
-
 
 int main() {
     using namespace std::chrono_literals;
@@ -36,7 +36,11 @@ int main() {
 
     const int largestBatchSize = 100;
 
-    Bins<std::function<void()>> workBins(largestBatchSize);
+    Bins<
+        std::shared_ptr<
+            std::atomic<std::function<void()>*>
+        >
+    > workBins(largestBatchSize);
 
     std::vector<int> batchSizes {largestBatchSize, 8, 3, 2, 1};
     int batchSize = accumulate(batchSizes.begin(),batchSizes.end(),0);
@@ -46,7 +50,6 @@ int main() {
     float sampleRate = 48000;
     float audioDurationMilliseconds = 1000.f / sampleRate * (float)batchCount;
 
-    int workerCount = 50;
     auto workload = 0ns;
 
 
@@ -73,24 +76,26 @@ int main() {
 
 
     for (int i = 0; i < largestBatchSize; ++i) {
-        std::counting_semaphore<>& triggerSemaphore = binWorkerPendingWorkSemaphore[i];
+        // std::counting_semaphore<>& triggerSemaphore = binWorkerPendingWorkSemaphore[i];
         std::counting_semaphore<>& doneSemaphore = binWorkercompletedWorkSemaphore[i];
         binWorkers.emplace_back(
                 [&workBins,
                 &shouldStop,
-                &triggerSemaphore,
+                // &triggerSemaphore,
                 &doneSemaphore,
                 i]() {
-
+            std::function<void()>* work;
             while (true) {
-                triggerSemaphore.acquire();
+                // triggerSemaphore.acquire();
+                workBins.get(i)->wait(work);
                 if (shouldStop) break;
 
                 // std::this_thread::sleep_for(0.5s);
                 // printf("\nworker [bins] %03i | ", i);
 
-                workBins.get(i)();
-                // if (work) work();
+                // workBins.get(i)();
+                work = workBins.get(i)->load();
+                (*work)();
 
                 doneSemaphore.release();
             }
@@ -105,12 +110,13 @@ int main() {
         for (auto size : batchSizes) {
             for (int i = 0; i < size; ++i) {
                 // printf("\n[bin] set work %03i", i);
-                workBins.set(i, binWork[i]);
+                workBins.get(i)->store(&(binWork[i]), std::memory_order_consume);
+                workBins.get(i)->notify_all();
             }
-            for (int i = 0; i < size; ++i) {
-                // printf("\n[bin] trigger %03i", i);
-                binWorkerPendingWorkSemaphore[i].release();
-            }
+            // for (int i = 0; i < size; ++i) {
+            //     // printf("\n[bin] trigger %03i", i);
+            //     binWorkerPendingWorkSemaphore[i].release();
+            // }
             for (int i = 0; i < size; ++i) {
                 // printf("\n[bin] waiting %03i", i);
                 binWorkercompletedWorkSemaphore[i].acquire();
