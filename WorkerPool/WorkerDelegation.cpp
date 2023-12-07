@@ -1,10 +1,7 @@
 #include <stdio.h>
 #include <chrono>
 #include <functional>
-#include <memory>
-#include <mutex>
 #include <numeric>
-#include <queue>
 #include <semaphore>
 #include <thread>
 
@@ -40,18 +37,12 @@ int main() {
 
     std::vector<int> batchSizes {largestBatchSize, 8, 3, 2, 1};
     int batchSize = accumulate(batchSizes.begin(),batchSizes.end(),0);
-    int batchCount = 100;
-    int taskCount = batchSize * batchCount;
+    int batchCount = 1000;
 
     float sampleRate = 48000;
-    float audioDurationMilliseconds = 1000.f / sampleRate * (float)batchCount;
+    float audioDurationMilliseconds = 1000.f / sampleRate * ((float)batchCount);
 
-    int workerCount = 50;
     auto workload = 0ns;
-
-
-    // ----------------
-    // work bins
 
     printf("\n\n----------------");
     printf("\nWORK BINS\n");
@@ -85,13 +76,8 @@ int main() {
             while (true) {
                 triggerSemaphore.acquire();
                 if (shouldStop) break;
-
-                // std::this_thread::sleep_for(0.5s);
                 // printf("\nworker [bins] %03i | ", i);
-
                 workBins.get(i)();
-                // if (work) work();
-
                 doneSemaphore.release();
             }
         });
@@ -120,9 +106,7 @@ int main() {
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    auto workPerformed = std::chrono::duration_cast<std::chrono::milliseconds>(taskCount * workload).count();
 
-    printf("\nwork performed: %i ms", workPerformed);
     printf("\ntime spent:     %i ms", duration);
     printf("\naudio duration:  %i ms", (int)audioDurationMilliseconds);
 
