@@ -1,1 +1,2 @@
 - Removing the lock and atomic based queues in favour of per-worker bins. It is 98% faster than using mutexe based queue and 99% faster than using the atomic-based queue.
+- atomics are 50-60% slower for waking up worker threads. sticking with semaphores.
