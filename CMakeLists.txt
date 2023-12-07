@@ -45,5 +45,7 @@ add_executable(RxCppSideEffectTiming rxcpp/SideEffectTiming/main.cpp)
 target_compile_options(RxCppSideEffectTiming PRIVATE ${flags})
 target_include_directories(RxCppSideEffectTiming PUBLIC ${PROJECT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
 
-
+add_executable(RxCppFunctionStreams rxcpp/FunctionStreams/main.cpp)
+target_compile_options(RxCppFunctionStreams PRIVATE ${flags})
+target_include_directories(RxCppFunctionStreams PUBLIC ${PROJECT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
 
