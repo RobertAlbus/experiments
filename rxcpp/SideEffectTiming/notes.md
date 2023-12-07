@@ -1,0 +1,1 @@
+Synchronizing event streams is expensive, period.

@@ -37,8 +37,13 @@ target_compile_options(AsyncQueues PRIVATE ${flags})
 
 find_package(rxcpp CONFIG REQUIRED)
 
-add_executable(RxCpp rxcpp/OscGen/main.cpp)
-target_compile_options(RxCpp PRIVATE -Wdeprecated-declarations ${flags})
-target_include_directories(RxCpp PUBLIC ${PROJECT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
+add_executable(RxCppOscGen rxcpp/OscGen/main.cpp)
+target_compile_options(RxCppOscGen PRIVATE -Wdeprecated-declarations ${flags})
+target_include_directories(RxCppOscGen PUBLIC ${PROJECT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
+
+add_executable(RxCppSideEffectTiming rxcpp/SideEffectTiming/main.cpp)
+target_compile_options(RxCppSideEffectTiming PRIVATE ${flags})
+target_include_directories(RxCppSideEffectTiming PUBLIC ${PROJECT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
+
 
 
