@@ -13,6 +13,12 @@ audio duration:  2083 ms
 
 - Function streams are real-time performant for sufficiently small graphs.
 - function streams can still take 75x the time to complete the same workload though.
+
+Work bin stream
+----
+time spent:     48344 ms
+audio duration:  2083 ms
+
 */
 
 #include "rxcpp/rx.hpp"
@@ -50,19 +56,26 @@ int main() {
         };
         processFns.emplace_back(work);
     }
-    auto workStream = rxcpp::subjects::behavior<std::function<void()>>([](){});
+
+    auto workStream = rxcpp::subjects::behavior<
+        std::vector<std::reference_wrapper<std::function<void()>>>
+    >({});
 
     std::chrono::_V2::system_clock::time_point end;
-    workStream.get_observable().subscribe(
-        [&completedWorkSemaphore](std::function<void()> workload) {
-            workload();
-            completedWorkSemaphore.release();
-        },
-        [&completedWorkSemaphore, &end]() {
-            end = std::chrono::high_resolution_clock::now();
-            completedWorkSemaphore.release();
-        }
-    );
+    for (int i = 0; i < largestBatchSize; ++i) {
+        workStream.get_observable().subscribe(
+            [&completedWorkSemaphore, i](std::vector<std::reference_wrapper<std::function<void()>>> workloadVector) {
+                if (i < workloadVector.size()) {
+                    workloadVector.at(i).get()();
+                    completedWorkSemaphore.release();
+                }
+            },
+            [&completedWorkSemaphore, &end]() {
+                end = std::chrono::high_resolution_clock::now();
+                completedWorkSemaphore.release();
+            }
+        );
+    }
 
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -71,20 +84,26 @@ int main() {
         // printf("\n--------------------------------", batch);
         int offset = 0;
         for (auto size : batchSizes) {
+            std::vector<std::reference_wrapper<std::function<void()>>> subvector;
             for (int i = 0; i < size; ++i) {
-                // printf("\n[bin] set work %03i", i);
-                workStream.get_subscriber().on_next(processFns[offset + i]);
+                // printf("\n[bin] set work %03i", offset + i);
+                subvector.emplace_back(processFns[offset + i]);
             }
-            offset += size;
+            workStream.get_subscriber().on_next(subvector);
             for (int i = 0; i < size; ++i) {
-                // printf("\n[bin] waiting %03i", i);
+                // printf("\n[bin] waiting  %03i", offset + i);
                 completedWorkSemaphore.acquire();
+                // printf("\n[bin] waited");
             }
+            // printf("\n[bin] done loops");
+            offset += size;
         }
     }
 
     workStream.get_subscriber().on_completed();
-    completedWorkSemaphore.acquire();
+    for (int i = 0; i < largestBatchSize; ++i) {
+        completedWorkSemaphore.acquire();
+    }
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
