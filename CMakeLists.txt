@@ -49,3 +49,15 @@ add_executable(RxCppFunctionStreams rxcpp/FunctionStreams/main.cpp)
 target_compile_options(RxCppFunctionStreams PRIVATE ${flags})
 target_include_directories(RxCppFunctionStreams PUBLIC ${PROJECT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
 
+# ----------------
+# zero mq
+
+find_package(cppzmq CONFIG REQUIRED)
+
+add_executable(ZmqSockets zmq/sockets/main.cpp)
+target_compile_options(ZmqSockets PRIVATE ${flags})
+target_include_directories(ZmqSockets PUBLIC ${PROJECT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
+target_link_libraries(ZmqSockets PUBLIC cppzmq)
+
+
+
