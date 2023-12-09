@@ -11,7 +11,7 @@ void *step1 (void *arg) {
 	zmq::context_t * context = static_cast<zmq::context_t*>(arg);
 	
 	//  Signal downstream to step 2
-	zmq::socket_t sender (*context, ZMQ_PAIR);
+	zmq::socket_t sender (*context, ZMQ_PUSH);
 	sender.connect("inproc://step2");
 
 	s_send (sender, std::string(""));
@@ -26,7 +26,7 @@ void *step2 (void *arg) {
 	zmq::context_t * context = static_cast<zmq::context_t*>(arg);
 	
     //  Bind to inproc: endpoint, then start upstream thread
-	zmq::socket_t receiver (*context, ZMQ_PAIR);
+	zmq::socket_t receiver (*context, ZMQ_PULL);
     receiver.bind("inproc://step2");
 
     pthread_t thread;
@@ -36,7 +36,7 @@ void *step2 (void *arg) {
     s_recv (receiver);
 
     //  Signal downstream to step 3
-    zmq::socket_t sender (*context, ZMQ_PAIR);
+    zmq::socket_t sender (*context, ZMQ_PUSH);
     sender.connect("inproc://step3");
     s_send (sender, std::string(""));
 
@@ -50,7 +50,7 @@ int main () {
 	zmq::context_t context(1);
 
     //  Bind to inproc: endpoint, then start upstream thread
-    zmq::socket_t receiver (context, ZMQ_PAIR);
+    zmq::socket_t receiver (context, ZMQ_PULL);
     receiver.bind("inproc://step3");
 
     pthread_t thread;
