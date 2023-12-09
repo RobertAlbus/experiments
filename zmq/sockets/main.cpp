@@ -14,7 +14,8 @@ void *step1 (void *arg) {
 	zmq::socket_t sender (*context, ZMQ_PUSH);
 	sender.connect("inproc://step2");
 
-	s_send (sender, std::string(""));
+    zmq::message_t message(0);
+    sender.send (message, 0);
 
 	return (NULL);
 }
@@ -33,12 +34,16 @@ void *step2 (void *arg) {
     pthread_create (&thread, NULL, step1, context);
 
     //  Wait for signal
-    s_recv (receiver);
+    zmq::message_t messageReceive;
+    receiver.recv(&messageReceive, 0);
 
     //  Signal downstream to step 3
     zmq::socket_t sender (*context, ZMQ_PUSH);
     sender.connect("inproc://step3");
     s_send (sender, std::string(""));
+
+    zmq::message_t messageSend(0);
+    sender.send (messageSend, 0);
 
     return (NULL);
 }
@@ -57,7 +62,9 @@ int main () {
     pthread_create (&thread, NULL, step2, &context);
 
     //  Wait for signal
-    s_recv (receiver);
+    // see ./../zmq/zhelpers.hpp:102 for getting the message string
+    zmq::message_t message;
+    receiver.recv(&message, 0);
     
     std::cout << "Test successful!" << std::endl;
 
