@@ -18,7 +18,7 @@ int main () {
     int maj, min, patch;
     zmq::version(&maj, &min, &patch);
     printf("\n%i.%i.%i", maj, min, patch);
-    bool shouldRun = true;
+    
     zmq::context_t context(8);
 
     zmq::socket_t router (context, zmq::socket_type::router);
@@ -29,12 +29,11 @@ int main () {
     std::vector<std::thread> workers;
 
     for (int i = 0; i < numWorkers; ++i) {
-        workers.emplace_back([](void* ctx, void* shouldRun_p, int i, int numIterations) {
+        workers.emplace_back([](void* ctx, int i, int numIterations) {
 
             std::string identity = "T" + std::to_string(i);
             printf("\nT%i init", i);
             zmq::context_t &context = *(static_cast<zmq::context_t*>(ctx));
-            bool* shouldRun = static_cast<bool*>(shouldRun_p);
 
             zmq::socket_t request (context, zmq::socket_type::req);
             request.set(zmq::sockopt::routing_id, identity);
@@ -61,7 +60,7 @@ int main () {
             printf("\nT%i stopping", i);
             
             request.close();
-        }, &context, &shouldRun, i+1, numIterations);
+        }, &context, i+1, numIterations);
         printf("\nT%i started", i);
     }
 
