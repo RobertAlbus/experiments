@@ -11,14 +11,15 @@ struct PORT {
 
 int main () {
 
-    int numWorkers = 1;
+    int numWorkers = 8;
+    int numIterations = 1000000;
     using namespace std::chrono_literals;
     
     int maj, min, patch;
     zmq::version(&maj, &min, &patch);
     printf("\n%i.%i.%i", maj, min, patch);
     bool shouldRun = true;
-    zmq::context_t context(2);
+    zmq::context_t context(8);
 
     zmq::socket_t router (context, zmq::socket_type::router);
     router.set(zmq::sockopt::sndhwm, 1000);
@@ -28,7 +29,7 @@ int main () {
     std::vector<std::thread> workers;
 
     for (int i = 0; i < numWorkers; ++i) {
-        workers.emplace_back([](void* ctx, void* shouldRun_p, int i) {
+        workers.emplace_back([](void* ctx, void* shouldRun_p, int i, int numIterations) {
 
             std::string identity = "T" + std::to_string(i);
             printf("\nT%i init", i);
@@ -41,26 +42,26 @@ int main () {
             request.connect(PORT::A);
 
             int numReceived = 0;
-            int numExpected = 10;
+            int numExpected = numIterations;
 
             printf("\nT%i start", i);
 
             while(numReceived < numExpected) {
                 zmq::message_t ready(0);
                 request.send(ready);
-                printf("\nT%i ready", i);
+                // printf("\nT%i ready", i);
                 zmq::message_t messageReceive;
                 request.recv(messageReceive);
                 ++numReceived;
                 // std::this_thread::sleep_for(0.5s);
-                printf("\nT%i - %i - done: %s", i, numReceived, numReceived < numExpected ? "no" : "yes");
+                // printf("\nT%i - %i - done: %s", i, numReceived, numReceived < numExpected ? "no" : "yes");
             }
             zmq::message_t done(0);
             request.send(done);
             printf("\nT%i stopping", i);
             
             request.close();
-        }, &context, &shouldRun, i+1);
+        }, &context, &shouldRun, i+1, numIterations);
         printf("\nT%i started", i);
     }
 
@@ -89,11 +90,11 @@ int main () {
     printf("\n");
 
     auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 10; ++i){
-        printf("\n----------------");
-        printf("\nT0 iteration %i", i+1);
+    for (int i = 0; i < numIterations; ++i){
+        // printf("\n----------------");
+        // printf("\nT0 iteration %i", i+1);
         for (int i = 0; i < numWorkers; ++i) {
-            printf("\nT0 replying to %s", readyWorkers.front().c_str());
+            // printf("\nT0 replying to %s", readyWorkers.front().c_str());
             zmq::message_t identity(readyWorkers.front());
             readyWorkers.pop_front();
 
@@ -113,7 +114,7 @@ int main () {
             zmq::message_t msg;
             router.recv(msg);
 
-            printf("\nT0 ready from %s", identity.to_string().c_str());
+            // printf("\nT0 ready from %s", identity.to_string().c_str());
         }
     }
 
@@ -122,7 +123,7 @@ int main () {
 
     // take workers offline
     for (int i = 0; i < numWorkers; ++i) {
-        printf("\nT0 replying to %s", readyWorkers.front().c_str());
+        // printf("\nT0 replying to %s", readyWorkers.front().c_str());
         zmq::message_t identity(readyWorkers.front());
         readyWorkers.pop_front();
 
