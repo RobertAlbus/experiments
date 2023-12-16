@@ -268,7 +268,7 @@ int main () {
         zmq::message_t msg;
         router.recv(msg);
 
-        printf("\nT0 greeted %i threads", i + 1);
+        printf("\nT0 greeted %s", identity.to_string().c_str());
     }
     printf("\nT0 all threads online");
     for (auto identity : readyWorkers) {
