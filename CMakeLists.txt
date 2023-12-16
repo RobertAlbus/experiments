@@ -29,8 +29,12 @@ target_compile_options(ThreadSync PRIVATE ${flags})
 add_executable(PersistentWorkers misc/persistentWorkers.cpp)
 target_compile_options(PersistentWorkers PRIVATE ${flags})
 
+add_executable(ReinterpretCast misc/ReinterpretCast.cpp)
+target_compile_options(ReinterpretCast PRIVATE)
+
 add_executable(WorkerDelegation WorkerPool/WorkerDelegation.cpp)
 target_compile_options(WorkerDelegation PRIVATE ${flags})
+
 
 # ----------------
 # rxcpp
