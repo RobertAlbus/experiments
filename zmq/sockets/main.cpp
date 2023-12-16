@@ -1,5 +1,5 @@
 #include <cmath>
-#include <map>
+#include <deque>
 #include <thread>
 
 #include "./../zhelpers.hpp"
@@ -173,17 +173,7 @@ single-threaded: 00.2756%
 
 single-threaded could perform: 16.13x more work in the same time
 --------------------------------
-
-Better performance when not using deque!
---------
-single-threaded could perform
-16.33x <= dequeue
-14.25x <= vector
---------
-- implying better runtime performance for threaded version 
-
 */
-
 
 struct PORT {
     static constexpr const char* A = "inproc://port_A";
@@ -264,7 +254,7 @@ int main () {
 
     // std::this_thread::sleep_for(1s);
 
-    std::vector<std::string> readyWorkers {};
+    std::deque<std::string> readyWorkers {};
     // Listen for workers coming online
     for (int i = 0; i < numWorkers; ++i) {
         zmq::message_t identity;
@@ -292,7 +282,8 @@ int main () {
         // printf("\nT0 iteration %i", i+1);
         for (int i = 0; i < numWorkers; ++i) {
             // printf("\nT0 replying to %s", readyWorkers.front().c_str());
-            zmq::message_t identity(readyWorkers[i]);
+            zmq::message_t identity(readyWorkers.front());
+            readyWorkers.pop_front();
 
             router.send(identity, zmq::send_flags::sndmore);
             zmq::message_t delim(std::string(""));
@@ -320,7 +311,8 @@ int main () {
     // take workers offline
     for (int i = 0; i < numWorkers; ++i) {
         // printf("\nT0 replying to %s", readyWorkers.front().c_str());
-        zmq::message_t identity(readyWorkers[i]);
+        zmq::message_t identity(readyWorkers.front());
+        readyWorkers.pop_front();
 
         router.send(identity, zmq::send_flags::sndmore);
         zmq::message_t delim(std::string(""));
