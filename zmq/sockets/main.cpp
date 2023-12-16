@@ -1,3 +1,4 @@
+#include <cmath>
 #include <deque>
 #include <thread>
 
@@ -18,7 +19,7 @@ int main () {
     int maj, min, patch;
     zmq::version(&maj, &min, &patch);
     printf("\n%i.%i.%i", maj, min, patch);
-    
+
     zmq::context_t context(8);
 
     zmq::socket_t router (context, zmq::socket_type::router);
@@ -134,13 +135,13 @@ int main () {
     }
 
     // std::this_thread::sleep_for(5s);
-    printf("\ntotal time = %ims", duration.count());
 
     for (auto& worker : workers) {
         worker.join();
     }
 
     printf("\nTest successful");
+    printf("\ntotal time = %ims", duration.count());
     printf("\n");
     router.close();
 
