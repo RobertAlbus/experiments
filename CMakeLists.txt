@@ -64,4 +64,17 @@ target_include_directories(ZmqSockets PUBLIC ${PROJECT_BINARY_DIR}/vcpkg_install
 target_link_libraries(ZmqSockets PUBLIC cppzmq)
 
 
+# ----------------
+# assembly
+
+# LPF Coeffs non-optimized
+add_executable(AssemblyLpfCoeffs assembly/LpfCoeffs/main.cpp)
+target_compile_options(AssemblyLpfCoeffs PRIVATE "-save-temps")
+# build/CMakeFiles/AssemblyLpfCoeffs.dir/assembly/LpfCoeffs/main.cpp.s
+
+# LPF Coeffs optimized
+add_executable(AssemblyLpfCoeffsOptimized assembly/LpfCoeffs/main.cpp)
+target_compile_options(AssemblyLpfCoeffsOptimized PRIVATE "-O3" "-save-temps")
+# build/CMakeFiles/AssemblyLpfCoeffsOptimized.dir/assembly/LpfCoeffs/main.cpp.s
+
 
