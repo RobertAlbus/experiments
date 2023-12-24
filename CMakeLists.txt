@@ -7,20 +7,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#--------------------------------
-# SIMD detect/enable
-
-list(APPEND COMMON_ARCH_FLAGS)
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
-        list(APPEND COMMON_ARCH_FLAGS "-msse")
-    endif()
-
-    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-        list(APPEND COMMON_ARCH_FLAGS "-mavx")
-    endif()
-endif()
-
 
 set(flags -Ofast -g)
 
@@ -83,12 +69,12 @@ target_link_libraries(ZmqSockets PUBLIC cppzmq)
 
 # LPF Coeffs non-optimized
 add_executable(AssemblyLpfCoeffs assembly/LpfCoeffs/main.cpp)
-target_compile_options(AssemblyLpfCoeffs PRIVATE -save-temps ${COMMON_ARCH_FLAGS})
+target_compile_options(AssemblyLpfCoeffs PRIVATE "-save-temps")
 # build/CMakeFiles/AssemblyLpfCoeffs.dir/assembly/LpfCoeffs/main.cpp.s
 
 # LPF Coeffs optimized
 add_executable(AssemblyLpfCoeffsOptimized assembly/LpfCoeffs/main.cpp)
-target_compile_options(AssemblyLpfCoeffsOptimized PRIVATE -O3 -save-temps ${COMMON_ARCH_FLAGS})
+target_compile_options(AssemblyLpfCoeffsOptimized PRIVATE "-O3" "-save-temps")
 # build/CMakeFiles/AssemblyLpfCoeffsOptimized.dir/assembly/LpfCoeffs/main.cpp.s
 
 
