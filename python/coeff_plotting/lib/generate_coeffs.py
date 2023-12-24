@@ -4,6 +4,7 @@ import numpy as np
 
 
 Coeffs = namedtuple('Coeffs', ['a', 'b'])
+
 def biquad_resonant_lp_coeffs(cutoff_hz, Q, gain_db, fs=48000):
     # Convert gain to linear scale
     A = 10 ** (gain_db / 40)
