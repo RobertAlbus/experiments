@@ -31,8 +31,8 @@ sample_rate = 48000
 Q = 0.707
 gain_db = -60
 
-starting_freq_hz = 50
-num_octaves = 6
+starting_freq_hz = 1
+num_octaves = 14
 
 cutoff_freqs_hz_exponential = [0]
 for octave in range(0, num_octaves):
