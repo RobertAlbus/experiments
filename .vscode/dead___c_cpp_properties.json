@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/usr/include/qt6/",
+                "/usr/include/qt6/QtCharts",
+                "${workspaceFolder}/cpp/**",
+                "${workspaceFolder}/cpp/build/**",
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/cpp/build/vcpkg_installed/x64-linux/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cppStandard": "c++20",
+            "compileCommands": "cpp/build/compile_commands.json",
+            "intelliSenseMode": "linux-clang-x86"
+        }
+    ],
+    "version": 4
+}

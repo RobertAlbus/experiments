@@ -77,4 +77,27 @@ add_executable(AssemblyLpfCoeffsOptimized assembly/LpfCoeffs/main.cpp)
 target_compile_options(AssemblyLpfCoeffsOptimized PRIVATE "-O3" "-save-temps")
 # build/CMakeFiles/AssemblyLpfCoeffsOptimized.dir/assembly/LpfCoeffs/main.cpp.s
 
+# ----------------
+# ui
+
+find_package(Qt6 6.1.1 COMPONENTS Core Gui Charts REQUIRED)
+include_directories(/usr/include/qt6)
+
+find_package(Matplot++ CONFIG REQUIRED)
+find_package(plplot CONFIG REQUIRED)
+
+# waveform plot
+add_executable(WavePlotter ui/WavePlotterBase.cpp)
+target_compile_options(WavePlotter PUBLIC "-O3")
+target_include_directories(WavePlotter PUBLIC ${PROJECT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
+
+target_link_libraries(WavePlotter PUBLIC 
+    Matplot++::cimg  
+    Matplot++::matplot 
+    PLPLOT::plplotcxx
+
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Charts
+)
 
